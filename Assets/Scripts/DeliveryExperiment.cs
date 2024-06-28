@@ -1454,7 +1454,7 @@ public class DeliveryExperiment : CoroutineExperiment
                 //add visuals with sound
                 messageImageDisplayer.deliver_item_visual_dislay.SetActive(true);
                 Debug.Log(deliveredItemNameWithSpace);
-                messageImageDisplayer.SetDeliverItemText(deliveredItemNameWithSpace);
+                messageImageDisplayer.SetDeliverItemText("text 3");
                 yield return SkippableWait(AUDIO_TEXT_DISPLAY);
                 messageImageDisplayer.deliver_item_visual_dislay.SetActive(false);
 
