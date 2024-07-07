@@ -8,7 +8,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-
+//specified Vector3 to avoid conflicts with Accord.Math.Vector3
+using Vector3 = UnityEngine.Vector3;
 using Accord.Math;
 // using Accord.Statistics.Distributions.Multivariate;
 using Accord.Statistics.Distributions.Univariate;
@@ -209,6 +210,12 @@ public class DeliveryExperiment : CoroutineExperiment
     private const int ELEMEM_REP_STIM_INTERVAL = 6000; // ms, 2*STIM_DURATION
     private const int ELEMEM_REP_STIM_DELAY = 1500; // ms
     private const int ELEMEM_REP_SWITCH_DELAY = 3000; // ms
+
+    // Keep track of ModeLlist
+
+    [SerializeField]
+
+    ModelList modelList;
 
     // Stim Tags
     List<string> GenerateStimTags(int numTrials)
@@ -1454,7 +1461,35 @@ public class DeliveryExperiment : CoroutineExperiment
                 //add visuals with sound
                 messageImageDisplayer.deliver_item_visual_dislay.SetActive(true);
                 Debug.Log(deliveredItemNameWithSpace);
-                messageImageDisplayer.SetDeliverItemText("text 3");
+                messageImageDisplayer.SetDeliverItemText(deliveredItemNameWithSpace);
+                //check name against deliveredItemName
+                
+                /*
+                foreach (var modelObject in modelList.models) {
+                    //get position of circle
+                    if (modelObject.name == deliveredItemName) {
+                        //set position of prefab to circle position
+                        var circlePosition = lastStoreToVisit.getCirclePosition();
+
+                        //create prefab
+                        Instantiate(modelObject, circlePosition, Quaternion.identity);
+
+                        //set prefab to active
+                        //modelObject.SetActive(true);
+
+                        break;
+                    }
+                }
+                */
+
+                //this will help us always see the apple 
+                //set position of prefab to circle position
+                var circlePosition = nextStore.getCirclePosition();
+
+                //create prefab
+                var spawned = Instantiate(modelList.models[0], circlePosition + Vector3.up * 2, Quaternion.identity);
+                spawned.gameObject.AddComponent<Spin>();
+
                 yield return SkippableWait(AUDIO_TEXT_DISPLAY);
                 messageImageDisplayer.deliver_item_visual_dislay.SetActive(false);
 
