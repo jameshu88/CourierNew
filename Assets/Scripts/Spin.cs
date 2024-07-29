@@ -3,6 +3,7 @@ using System.Collections;
 
 public class Spin : MonoBehaviour {
     private float speed = 10f;
+    private float timeToDisappear = 10f;
 
     void Update() {
         transform.Rotate(Vector3.up, speed * Time.deltaTime);
@@ -11,6 +12,8 @@ public class Spin : MonoBehaviour {
     void Start() {
         //moving the object up and down
         StartCoroutine(moveUpAndDown());
+
+        StartCoroutine(Disappear());
     }
 
     public void moveUp() {
@@ -35,5 +38,11 @@ public class Spin : MonoBehaviour {
                 yield return null;
             }
         }
+    }
+
+    private IEnumerator Disappear()
+    {
+        yield return new WaitForSeconds(timeToDisappear);
+        Destroy(gameObject);
     }
 }

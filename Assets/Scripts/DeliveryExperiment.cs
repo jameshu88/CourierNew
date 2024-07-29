@@ -1201,6 +1201,7 @@ public class DeliveryExperiment : CoroutineExperiment
     private IEnumerator DoDeliveries(int trialNumber, int continuousTrialNum, bool practice = false, bool skipLastDelivStores = false, 
                                      StorePointType storePointType = StorePointType.Random, bool freeFirst = true, string stimTag = null)
     {
+        bool canSpawnAgain = false;
         Dictionary<string, object> trialData = new Dictionary<string, object>();
         trialData.Add("trial number", continuousTrialNum);
         if (practice)
@@ -1361,8 +1362,12 @@ public class DeliveryExperiment : CoroutineExperiment
             float startTime = Time.time;
             float cumDist = 0f;
             float dist = CalculateDistance(nextStore.transform.Find("DeliveryZone"));
+            int minSpawnDistance = (int)(dist / 100 * 40);
+            int maxSpawnDistance = (int)(dist / 100 * 60);
+            int randomDistance = UnityEngine.Random.Range(minSpawnDistance, maxSpawnDistance);
             bool distTriggerActivated = false;
             bool timeTriggerActivated = false;
+            GameObject spawnedItem = new GameObject();
             while (!nextStore.PlayerInDeliveryPosition())
             {
                 yield return null;
@@ -1378,6 +1383,20 @@ public class DeliveryExperiment : CoroutineExperiment
                     yield return DisplayPointingIndicator(nextStore, true);
                 if (InputManager.GetButton("Secret"))
                     goto SkipRemainingDeliveries;
+
+                if(canSpawnAgain)
+                {
+                    if (randomDistance == (int)dist)
+                    {
+                        Vector3 pointAhead = GetPointAheadOnPath(player.transform.position, randomDistance);
+                        spawnedItem = Instantiate(modelList.models[0], pointAhead + Vector3.up * 4 + player.transform.forward * 5, Quaternion.identity);
+                        canSpawnAgain = false;
+                    }
+                }
+            }
+            if(spawnedItem != null)
+            {
+                Destroy(spawnedItem);
             }
             yield return DisplayPointingIndicator(nextStore, false);
 
@@ -1502,6 +1521,7 @@ public class DeliveryExperiment : CoroutineExperiment
                 //create prefab
                 var spawned = Instantiate(modelList.models[0], circlePosition + Vector3.up * 2, Quaternion.identity);
                 spawned.gameObject.AddComponent<Spin>();
+                canSpawnAgain = true;
 
                 yield return SkippableWait(AUDIO_TEXT_DISPLAY);
                 messageImageDisplayer.deliver_item_visual_dislay.SetActive(false);
@@ -3121,10 +3141,10 @@ public class DeliveryExperiment : CoroutineExperiment
                 return store.GetStoreName();
         throw new UnityException("That store game object doesn't exist in the stores list.");
     }
-
+    NavMeshPath path;
     private float CalculateDistance(Transform target)
     {
-        NavMeshPath path = new NavMeshPath();
+        path = new NavMeshPath();
         float dist = 0;
 
         if (NavMesh.CalculatePath(target.position, player.transform.position, NavMesh.AllAreas, path))
@@ -3140,6 +3160,26 @@ public class DeliveryExperiment : CoroutineExperiment
         }
 
         return dist;
+    }
+
+    Vector3 GetPointAheadOnPath(Vector3 currentPosition, float distance)
+    {
+        float remainingDistance = distance;
+
+        for (int i = 0; i < path.corners.Length - 1; i++)
+        {
+            Vector3 start = path.corners[i];
+            Vector3 end = path.corners[i + 1];
+            float segmentDistance = Vector3.Distance(start, end);
+
+            if (remainingDistance <= segmentDistance)
+            {
+                return Vector3.Lerp(start, end, remainingDistance / segmentDistance);
+            }
+
+            remainingDistance -= segmentDistance;
+        }
+        return Vector3.one;
     }
 
 }
