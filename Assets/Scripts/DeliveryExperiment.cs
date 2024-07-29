@@ -1389,7 +1389,8 @@ public class DeliveryExperiment : CoroutineExperiment
                     if (randomDistance == (int)dist)
                     {
                         Vector3 pointAhead = GetPointAheadOnPath(player.transform.position, randomDistance);
-                        spawnedItem = Instantiate(modelList.models[0], pointAhead + Vector3.up * 4 + player.transform.forward * 5, Quaternion.identity);
+                        //changed from 5 to 10
+                        spawnedItem = Instantiate(modelList.models[0], pointAhead + Vector3.up * 4 + player.transform.forward * 10, Quaternion.identity);
                         canSpawnAgain = false;
                     }
                 }
